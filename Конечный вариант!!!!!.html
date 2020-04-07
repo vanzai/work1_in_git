@@ -1,0 +1,415 @@
+<head>
+<link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="js/jquery-3.1.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.jquery.min.js"></script>
+
+	<script type="text/javascript">
+	$(".livesearch").chosen();
+	
+function Record(index,firstname,surname,zipcode,email,phone,birthdate,date,tm) {
+	this.index = index;
+	this.firstname=firstname;
+	this.surname=surname;
+	this.zipcode=zipcode;
+	this.email=email;
+	this.phone=phone;
+	this.birthdate=birthdate;
+	this.date=date;
+	this.tm=tm;
+	this.time=function()
+	{
+		return this.tm.toLocaleTimeString();
+	}
+	this.day=function()
+	{
+		return this.date.toLocaleDateString();
+	}
+}
+
+var records=[
+new Record(
+"<strong>№</strong>",
+"<strong>Имя</strong>",
+"<strong>Фамилия</strong>",
+"<strong>Почтовый индекс</strong>",
+"<strong>Email</strong>",
+"<strong>Телефон</strong>",
+"<strong>Дата рождения</strong>",
+"<strong>Дата</strong>",
+"<strong>Время</strong>")
+
+];
+function time(date)
+{
+	return ""+date.toLocaleTimeString();
+}
+function day(date)
+{
+	return "" + date.toLocaleDateString();
+	
+}
+
+function deleteTable(){
+	var tableHeader=0;
+   var table = document.getElementById("tb");
+   var rowCount = table.rows.length;
+   for (var i = tableHeader; i < rowCount; i++) 
+   {
+      table.deleteRow(tableHeader);
+   }
+}
+function displayRecords(){
+
+deleteTable();
+//добавление таблицы
+var tbl = document.getElementById('tb');
+trs = tbl.getElementsByTagName('tr');
+
+for(var k=0; k < records.length +1; k++){
+
+	var r = tbl.insertRow(k);
+	r.id = "stroka_"+(k);
+	
+	var s = trs[k].insertCell(0);
+	s.innerHTML = records[k].index;
+	var s = trs[k].insertCell(1);
+	s.innerHTML = records[k].firstname;
+	var s = trs[k].insertCell(2);
+	s.innerHTML = records[k].surname;
+	var s = trs[k].insertCell(3);
+	s.innerHTML = records[k].zipcode;
+	var s = trs[k].insertCell(4);
+	s.innerHTML = records[k].birthdate;
+	var s = trs[k].insertCell(5);
+	s.innerHTML = records[k].email;
+	var s = trs[k].insertCell(6);
+	s.innerHTML = records[k].phone;
+	var s = trs[k].insertCell(7);
+	if(k==0){
+		s.innerHTML = records[k].date;
+	}
+	else{
+		s.innerHTML = records[k].day();
+	}
+	var s = trs[k].insertCell(8);
+	if(k==0){
+		s.innerHTML = records[k].tm;
+	}
+		else{
+		s.innerHTML = records[k].time();
+		
+	}
+
+
+	if(k%1==0)
+	{
+		document.getElementById("stroka_"+(k)).style.backgroundColor= '#3CB371';
+	}
+	if(k%2==1)
+	{
+		document.getElementById("stroka_"+(k)).style.backgroundColor= '#228B22'; 
+	}	
+	}
+
+}
+
+
+function send() {
+	var r= new Record(
+	records.length,
+	document.getElementById("firstname").value,
+	document.getElementById("surname").value,
+	document.getElementById("zipcode").value,
+	document.getElementById("email").value,
+	document.getElementById("phone").value,
+	document.getElementById("birthdate").value,
+	new Date(),
+	new Date());
+	records.push(r);
+	displayRecords();
+	clear();
+	enable();
+}
+
+
+
+function sort(compare)
+{
+	var l=records.length;
+	for (var i=0;i<l-1;i++)
+	{
+		var j_min=i;
+		for (var j=i+1;j<l;j++)
+		{
+			if(compare(records[j],records[j_min])){
+				j_min=j;
+			}
+		}
+	var r=records[j_min];
+	records[j_min]=records[i];
+	records[i]=r;
+	}
+	displayRecords();
+}
+var comparers=[
+function comp1(r1,r2){
+	return r1.date<r2.date;
+},
+function comp2(r1,r2){
+	return r1.date>r2.date;
+},
+function comp3(r1,r2)
+{
+	return r1.firstname<r2.firstname;
+},
+function comp4(r1,r2){
+	return r1.firstname>r2.firstname;
+}
+];
+
+
+var lastResFind=""; // последний удачный результат
+var copy_page=""; // копия страницы в ихсодном виде
+function TrimStr(s) {
+     s = s.replace( /^\s+/g, '');
+  return s.replace( /\s+$/g, '');
+}
+function FindOnPage(inputId) {//ищет текст на странице, в параметр передается ID поля для ввода
+  var obj = window.document.getElementById(inputId);
+  var textToFind;
+ 
+  if (obj) {
+    textToFind = TrimStr(obj.value);//обрезаем пробелы
+  } 
+  else {
+	alert("Введенная фраза не найдена");
+    return;
+  }
+  if (textToFind == "") {
+    alert("Вы ничего не ввели");
+    return;
+  }
+  
+  if(document.body.innerHTML.indexOf(textToFind)=="-1")
+	alert("Ничего не найдено, проверьте правильность ввода!");
+  
+  if(copy_page.length>0)
+        document.body.innerHTML=copy_page;
+  else copy_page=document.body.innerHTML;
+
+  
+
+  document.body.innerHTML = document.body.innerHTML.replace(eval("/"+textToFind+"/gi"),"<a name="+textToFind+" style='background:#00BFFF'>"+textToFind+"</a>"); //Заменяем найденный текст ссылками с якорем;
+  lastResFind=textToFind; // сохраняем фразу для поиска, чтобы в дальнейшем по ней стереть все ссылки
+  window.location = '#'+textToFind;//перемещаем скрол к последнему найденному совпадению
+ } 
+	
+
+	function isEmpty(field) {
+	 return field.value.length==0
+	 }
+	 
+	 function isLonger20(field) {
+	 return field.value.length>20;
+	 }
+	 
+	 function isLonger6(field) {
+	 return field.value.length<6;
+	 }
+	 
+	  function isCorrectEmail(field){
+	  var emailReger=/^\w+@\w+\.\w{2,4}$/;
+	  return emailReger.test(field.value);
+	  }
+	  
+	  function isCorrectPhone(field){
+	  var phoneReger=/^8\d{3}\d{3}\d{2}\d{2}$/;
+	  return phoneReger.test(field.value);
+	  }
+	  
+	  function isCorrectDate(field){
+	  var dataReger=/^\d{2}(\/|\.)\d{2}(\/|\.)\d{4}$/;
+	  return dataReger.test(field.value);
+	  }
+	  
+	  function isCorrectDateValues(field){
+	  var dd=parseInt(field.value.substring(0,2));
+	  var mm=parseInt(field.value.substring(3,5));
+	  var gg=parseInt(field.value.substring(6,10));
+	  return 1<=dd && dd<=31 && 1<=mm && mm<=12 && 1900<=gg && gg<=2020;
+	  }
+	 
+	 function containsNotDigits(field) {
+	 var digits = "0123456789";
+	 for (var i=0;i<field.value.length; i++){
+	 if (digits.indexOf(field.value[i])==-1){
+	 return true;
+			}
+		}
+	  return false;
+	}
+	 
+	 function containsDigits(field) {
+	 var digits = "0123456789";
+	 for (var i=0;i<digits.length; i++){
+	 if (field.value.indexOf(digits[i])!=-1){
+	 return true;
+			}
+		}
+	  return false;
+	}
+			function checkName(field) {
+			label=document.getElementById(field.id + "mes");
+			 if (isEmpty(field)){
+				label.innerHTML="Поле не заполнено!";
+				return false;
+			 } else if (isLonger20(field)){
+			  label.innerHTML="Введено более 20 символов!";
+			  return false;
+			 } else if (containsDigits(field)){
+			  label.innerHTML="Введены цыфры!";
+			  return false;
+			 } else {
+			  label.innerHTML="Отлично!";
+			  return true;
+			}
+		}
+		
+		function checkZip(field) {
+			label=document.getElementById(field.id + "mes");
+			 if (isEmpty(field)){
+				label.innerHTML="Поле не заполнено!";
+			 } else if (isLonger6(field)){
+			  label.innerHTML="Длинна не равна 6 символам!";
+			 } else if (containsNotDigits(field)){
+			  label.innerHTML="Введены не цыфры!";
+			 } else {
+			  label.innerHTML="Отлично!";
+			    return true;
+			}
+		}
+		
+		function checkEmail(field) {
+			label=document.getElementById(field.id + "mes");
+			 if (isEmpty(field)){
+				label.innerHTML="Поле не заполнено!";
+			 } else if (!isCorrectEmail(field)){
+				label.innerHTML="E-mail введен не коректно!";
+			 } else {
+				label.innerHTML="Отлично!";
+				  return true;
+			}
+		}
+		
+		function checkDate(field) {
+			label=document.getElementById(field.id + "mes");
+			 if (isEmpty(field)){
+				label.innerHTML="Поле не заполнено!";
+			 } else if (!isCorrectDate(field)){
+				label.innerHTML="дата введена не коректно!";
+			 } else if (!isCorrectDateValues(field)){
+				label.innerHTML="Некоректное значение даты!";
+			 } else {
+				label.innerHTML="Отлично!";
+				 return true;
+			}
+		}
+		
+		function checkPhone(field) {
+			label=document.getElementById(field.id + "mes");
+			 if (isEmpty(field)){
+				label.innerHTML="Поле не заполнено!";
+			 } else if (!isCorrectPhone(field)){
+				label.innerHTML="Телефон введен не коректно!";
+			 } else {		 
+				label.innerHTML="Отлично!";
+				 return true;
+			}
+		}
+		
+function enable(){	
+		document.getElementById("send").disabled = false;	
+		
+}
+
+function disable(){
+		document.getElementById("send").disabled = true;
+		
+}
+
+function checkAll(){
+	p=true;
+	p&=checkName(document.getElementById("firstname"));
+	p&=checkName(document.getElementById("surname"));
+	p&=checkZip(document.getElementById("zipcode"));
+	p&=checkEmail(document.getElementById("email"));
+	p&=checkPhone(document.getElementById("phone"));
+	p&=checkDate(document.getElementById("birthdate"));
+	if (p)
+	{enable()}
+	else
+	{disable()}
+	}
+</script>
+</head>	
+<fieldset>
+	<legend>Регистрация</legend>
+	<p>
+            <table>
+	<tr>
+	<td>Имя:</td>
+	<td><input type="text" id="firstname" placeholder="не более 20 символов" onkeyup="checkAll()"
+	  onblur="checkName(this)"/>
+	 <td> <span id="firstnamemes"></span><br></td></td>
+	  </tr>
+	  <tr>
+	<td>Фамилия:</td>
+	<td><input type="text" id="surname" placeholder="не более 20 символов" onkeyup="checkAll()"
+	  onblur="checkName(this)"/>
+	  <td><span id="surnamemes"></span><br></td>
+	   </tr>
+	  <tr>
+	<td>Почтовый индекс:</td>
+	<td><input type="text" id="zipcode" placeholder="6 цифр" onkeyup="checkAll()"
+	  onblur="checkZip(this)"/>
+	<td>  <span id="zipcodemes"></span><br></td>
+	   </tr>
+	  <tr>
+	<td>E-mail:</td>
+	<td><input type="text" id="email" placeholder="alex@gmail.com" onkeyup="checkAll()"
+	  onblur="checkEmail(this)"/>
+	 <td> <span id="emailmes"></span><br></td>
+	   </tr>
+	  <tr>
+	<td>Телефон:</td>
+	<td><input type="text" id="phone" placeholder="89132997990" onkeyup="checkAll()"
+	  onblur="checkPhone(this)"/>
+	 <td> <span id="phonemes"></span><br></td>
+	   </tr>
+	   <tr>
+	<td>Дата рождения:</td>	
+	<td><input type="text" id="birthdate" placeholder="12.12.1999" onkeyup="checkAll()"
+	  onblur="checkDate(this)"/>
+	 <td> <span id="birthdatemes"></span><br>	</td>
+	   </tr>
+	</p>
+            </table>
+	
+
+
+<div id="toolbar">
+<input id="send" type="button" value="Добавить запись" onclick="send()"/>
+<input type="text" id="text-to-find" value=""> 
+<input type="button" onclick="javascript: FindOnPage('text-to-find'); return false;" value="Поиск"/>
+<input type="button" value="По алфавиту ->" onclick="sort(comparers[0])"/>
+<input type="button" value="По алфавиту <-" onclick="sort(comparers[1])"/>
+<input type="button" value="По дате ->" onclick="sort(comparers[0])"/>
+<input type="button" value="По дате <-" onclick="sort(comparers[1])"/>
+</div>
+<div id="records_place">
+</div>
+<table id="tb">
+</table>
+</body>
+</html>
